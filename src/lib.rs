@@ -7,6 +7,16 @@ use near_sdk::{
 };
 
 mod utils;
+pub use utils::*;
+
+mod code_hash;
+pub use code_hash::*;
+
+mod verification;
+pub use verification::*;
+
+mod ownership;
+pub use ownership::*;
 
 mod contract;
 pub use contract::*;

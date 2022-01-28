@@ -6,7 +6,7 @@ authors = ["Jacob Lindahl <jacob@near.foundation>"]
 
 [dependencies]
 near-sdk = "4.0.0-pre.6"
-near-contract-standards = "4.0.0-pre.6"
+bs58 = "0.4.0"
 
 [lib]
 crate-type = ["cdylib"]
