@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum VerificationStatus {
     PENDING,
@@ -8,7 +8,7 @@ pub enum VerificationStatus {
     FAILURE,
 }
 
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct VerificationResult {
     pub code_hash: CodeHash,
@@ -19,7 +19,7 @@ pub struct VerificationResult {
     pub verification_request_id: u64,
 }
 
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub struct VerificationRequest {
     pub id: u64,

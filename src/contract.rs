@@ -54,8 +54,15 @@ impl Contract {
         self.verifications.get(&code_hash)
     }
 
+    pub fn get_pending_requests(&self) -> Vec<VerificationRequest> {
+        self.requests
+            .iter()
+            .filter(|r| r.status == VerificationStatus::PENDING)
+            .collect()
+    }
+
     #[payable]
-    pub fn request_verification(&mut self, repository: String, fee: U128) {
+    pub fn request_verification(&mut self, repository: String, fee: U128) -> VerificationRequest {
         let attached_deposit = env::attached_deposit();
         require!(attached_deposit > 0, "Deposit required");
 
@@ -67,7 +74,7 @@ impl Contract {
         let id = self.requests.len();
         let now = env::block_timestamp();
 
-        self.requests.push(&VerificationRequest {
+        let request = VerificationRequest {
             id,
             repository,
             fee: verification_fee,
@@ -75,9 +82,13 @@ impl Contract {
             code_hash: None,
             created_at: now,
             updated_at: now,
-        });
+        };
+
+        self.requests.push(&request);
 
         storage_refund(storage_usage_start, verification_fee);
+
+        request
     }
 
     fn resolve(&mut self, id: u64, result: Option<VerificationResult>) {
