@@ -1,0 +1,4 @@
+{
+  "python.pythonPath": "web\\venv\\Scripts\\python.exe",
+  "python.formatting.provider": "black"
+}
