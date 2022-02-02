@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 from os import environ
 
 import requests as req
@@ -13,17 +15,49 @@ circleci_api_key = environ["CIRCLECI_API_KEY"]
 circleci_job_name = environ["CIRCLECI_JOB_NAME"]
 circleci_project_slug = environ["CIRCLECI_PROJECT_SLUG"]
 
+auth_headers = {"Circle-Token": circleci_api_key}
+
+
+def auth_get(url):
+    return req.get(url, headers=auth_headers)
+
 
 def get_job_artifacts(job_number):
-    return req.get(
+    res = auth_get(
         f"https://circleci.com/api/v2/project/{circleci_project_slug}/{job_number}/artifacts",
-        headers={"Circle-Token": circleci_api_key},
     ).json()
+
+    d = {}
+
+    for item in res["items"]:
+        d[item["path"]] = item["url"]
+
+    return d
+
+
+@dataclass_json
+@dataclass
+class VerificationMetadata:
+    repo: str
+    remote: str
+    branch: str
+    commit_hash: str
+
+    @staticmethod
+    def assemble(artifacts):
+        return VerificationMetadata(
+            auth_get(artifacts["git/repo.txt"]).text.strip(),
+            auth_get(artifacts["git/remote.txt"]).text.strip(),
+            auth_get(artifacts["git/branch.txt"]).text.strip(),
+            auth_get(artifacts["git/commit.txt"]).text.strip(),
+        )
 
 
 @app.get("/test/<job_number>")
 def test(job_number):
-    return get_job_artifacts(job_number), 200
+    artifacts = get_job_artifacts(job_number)
+    m = VerificationMetadata.assemble(artifacts)
+    return m.to_dict()
 
 
 @app.post("/webhook")
