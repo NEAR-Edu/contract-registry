@@ -1,13 +1,19 @@
 from dataclasses import dataclass
+from typing import Dict, List
 from dataclasses_json import dataclass_json
 from os import environ
+from dotenv import load_dotenv
 
-import requests as req
-from flask import Flask, request
+import aiohttp
+from aiohttp import web
+import asyncio
+
 
 import circleci_verify
 
-app = Flask(__name__)
+load_dotenv()
+
+routes = web.RouteTableDef()
 
 registry_cache_dir = environ["REGISTRY_CACHE_DIR"]
 circleci_webhook_secret = environ["CIRCLECI_WEBHOOK_SECRET"]
@@ -18,14 +24,26 @@ circleci_project_slug = environ["CIRCLECI_PROJECT_SLUG"]
 auth_headers = {"Circle-Token": circleci_api_key}
 
 
-def auth_get(url):
-    return req.get(url, headers=auth_headers)
+async def auth_get_text(session: aiohttp.ClientSession, url):
+    async with session.get(url, headers=auth_headers) as request:
+        return await request.text()
 
 
-def get_job_artifacts(job_number):
-    res = auth_get(
+async def auth_get_raw(session: aiohttp.ClientSession, url):
+    async with session.get(url, headers=auth_headers) as request:
+        return await request.read()
+
+
+async def auth_get_json(session: aiohttp.ClientSession, url):
+    async with session.get(url, headers=auth_headers) as request:
+        return await request.json(content_type=None)
+
+
+async def get_job_artifacts(session: aiohttp.ClientSession, job_number):
+    res = await auth_get_json(
+        session,
         f"https://circleci.com/api/v2/project/{circleci_project_slug}/{job_number}/artifacts",
-    ).json()
+    )
 
     d = {}
 
@@ -33,6 +51,14 @@ def get_job_artifacts(job_number):
         d[item["path"]] = item["url"]
 
     return d
+
+
+async def parallel_artifacts(
+    session: aiohttp.ClientSession, artifacts: Dict[str, str], artifact_paths: List[str]
+) -> List[str]:
+    urls = [artifacts[path] for path in artifact_paths]
+    requests = [auth_get_text(session, url) for url in urls]
+    return await asyncio.gather(*requests)
 
 
 @dataclass_json
@@ -44,24 +70,38 @@ class VerificationMetadata:
     commit_hash: str
 
     @staticmethod
-    def assemble(artifacts):
-        return VerificationMetadata(
-            auth_get(artifacts["git/repo.txt"]).text.strip(),
-            auth_get(artifacts["git/remote.txt"]).text.strip(),
-            auth_get(artifacts["git/branch.txt"]).text.strip(),
-            auth_get(artifacts["git/commit.txt"]).text.strip(),
+    async def assemble(session, artifacts):
+        artifact_contents = await parallel_artifacts(
+            session,
+            artifacts,
+            [
+                "git/repo.txt",
+                "git/remote.txt",
+                "git/branch.txt",
+                "git/commit.txt",
+            ],
         )
+        return VerificationMetadata(*[text.strip() for text in artifact_contents])
 
 
-@app.get("/test/<job_number>")
-def test(job_number):
-    artifacts = get_job_artifacts(job_number)
-    m = VerificationMetadata.assemble(artifacts)
-    return m.to_dict()
+@routes.get("/test/{job_number}")
+async def test(request: web.Request):
+    job_number = request.match_info["job_number"]
+
+    async with aiohttp.ClientSession() as session:
+        artifacts = await get_job_artifacts(session, job_number)
+        metadata, code_bytes = await asyncio.gather(
+            VerificationMetadata.assemble(session, artifacts),
+            auth_get_raw(session, artifacts["out/out.wasm"]),
+        )
+        print(metadata.to_dict())
+        from code_hash import code_hash
+
+        print(code_hash(code_bytes))
 
 
-@app.post("/webhook")
-def webhook():
+@routes.post("/webhook")
+async def webhook(request: web.Request):
     if not circleci_verify.verify_signature(
         circleci_webhook_secret,
         request.headers,
@@ -69,7 +109,7 @@ def webhook():
     ):
         return {"error": "Unauthorized"}, 401
 
-    body = request.get_json()
+    body = request.json()
 
     print(body)
 
@@ -80,6 +120,19 @@ def webhook():
     ):
         return {"error": "Malformed request"}, 400
 
+    job_number = body["job"]["number"]
+
+    async with aiohttp.ClientSession() as session:
+        artifacts = await get_job_artifacts(session, job_number)
+        [metadata, code_bytes] = await asyncio.gather(
+            VerificationMetadata.assemble(session, artifacts),
+            auth_get(session, artifacts["out/out.wasm"]),
+        )
+        print(metadata.to_dict())
+        print(code_bytes)
+
 
 if __name__ == "__main__":
-    app.run()
+    app = web.Application()
+    app.add_routes(routes)
+    web.run_app(app)
