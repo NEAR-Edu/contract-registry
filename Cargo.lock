@@ -1486,6 +1486,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "near-smart-contract-rust-template"
+version = "0.1.0"
+dependencies = [
+ "bs58",
+ "near-sdk",
+]
+
+[[package]]
 name = "near-sys"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
