@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Jacob Lindahl <jacob@near.foundation>"]
 
 [dependencies]
-near-sdk = "4.0.0-pre.6"
+near-sdk = "4.0.0-pre.7"
 bs58 = "0.4.0"
 
 [lib]
