@@ -35,9 +35,7 @@ impl reject::Reject for InvalidSignature {}
 struct IncompatibleSignatureVersion;
 impl reject::Reject for IncompatibleSignatureVersion {}
 
-pub fn verify_filter(secret: &str) -> impl Filter<Extract = (), Error = warp::Rejection> + Clone {
-    let secret = std::sync::Arc::new(secret.to_owned());
-
+pub fn verify_filter(secret: &str) -> impl Filter<Extract = (), Error = warp::Rejection> + Clone + '_ {
     warp::header::<String>(HEADER)
         .and(warp::body::bytes())
         .and_then(move |header: String, body: warp::hyper::body::Bytes| {
@@ -45,7 +43,7 @@ pub fn verify_filter(secret: &str) -> impl Filter<Extract = (), Error = warp::Re
             match signature {
                 None => futures::future::err(reject::custom(IncompatibleSignatureVersion)),
                 Some(signature) => {
-                    if verify_signature(&secret, signature, &body) {
+                    if verify_signature(secret, signature, &body) {
                         futures::future::ok(())
                     } else {
                         futures::future::err(reject::custom(InvalidSignature))
