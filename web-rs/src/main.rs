@@ -7,7 +7,10 @@ use crate::{
     circleci::{artifacts::VerifierClient, verify::verify_filter},
     env::CIRCLECI_WEBHOOK_SECRET,
 };
+
 mod circleci;
+mod network_config;
+mod contract_interaction;
 mod env;
 
 #[tokio::main]
@@ -16,14 +19,20 @@ async fn main() {
         println!("No .env file found.");
     }
 
-    let project_slug = std::env::var(env::CIRCLECI_PROJECT_SLUG).unwrap();
-    let api_key = std::env::var(env::CIRCLECI_API_KEY).unwrap();
+    let network_config_path = std::env::var(env::NETWORK_CONFIG).unwrap();
 
-    let vclient = VerifierClient::new(&project_slug, &api_key);
-    let artifacts = vclient.get_job_artifacts("24").await.unwrap();
-    println!("{:?}", &artifacts);
-    let metadata = vclient.assemble(artifacts).await.unwrap();
-    println!("{}", &metadata.code_hash);
+    let network_config = network_config::load(&network_config_path);
+
+    println!("{:?}", network_config);
+
+    // let project_slug = std::env::var(env::CIRCLECI_PROJECT_SLUG).unwrap();
+    // let api_key = std::env::var(env::CIRCLECI_API_KEY).unwrap();
+
+    // let vclient = VerifierClient::new(&project_slug, &api_key);
+    // let artifacts = vclient.get_job_artifacts("24").await.unwrap();
+    // println!("{:?}", &artifacts);
+    // let metadata = vclient.assemble(artifacts).await.unwrap();
+    // println!("{}", &metadata.code_hash);
 
     return;
 
