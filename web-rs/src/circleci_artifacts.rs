@@ -8,13 +8,13 @@ use reqwest::{
     Client,
 };
 
-pub struct VerifierClient {
-    project_slug: String,
+pub struct VerifierClient<'a> {
+    project_slug: &'a str,
     client: Client,
 }
 
-impl VerifierClient {
-    pub fn new(project_slug: String, api_key: &str) -> Self {
+impl<'a> VerifierClient<'a> {
+    pub fn new(project_slug: &'a str, api_key: &str) -> Self {
         let mut headers = HeaderMap::new();
         let mut api_key_header_value = HeaderValue::from_str(api_key).unwrap();
         api_key_header_value.set_sensitive(true);

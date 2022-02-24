@@ -17,7 +17,7 @@ async fn main() {
     let project_slug = std::env::var(env::CIRCLECI_PROJECT_SLUG).unwrap();
     let api_key = std::env::var(env::CIRCLECI_API_KEY).unwrap();
 
-    let vclient = VerifierClient::new(project_slug, &api_key);
+    let vclient = VerifierClient::new(&project_slug, &api_key);
     let artifacts = vclient.get_job_artifacts("24").await.unwrap();
     println!("{:?}", &artifacts);
     let metadata = vclient.assemble(artifacts).await.unwrap();
