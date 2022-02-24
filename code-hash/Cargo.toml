@@ -1,0 +1,9 @@
+[package]
+name = "code-hash"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+near-sdk = "4.0.0-pre.7"
+bs58 = "0.4.0"
+sha2 = "0.10.2"
