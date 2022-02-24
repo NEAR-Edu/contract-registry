@@ -1,8 +1,9 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
 use near_sdk::{
     borsh::{self, BorshDeserialize, BorshSerialize},
     serde::{de::*, Serialize, Serializer},
+    serde_json,
 };
 use sha2::{Digest, Sha256};
 
@@ -17,15 +18,17 @@ impl CodeHash {
     }
 }
 
-impl From<&[u8]> for CodeHash {
-    fn from(bytes: &[u8]) -> Self {
-        Self(bytes.to_vec())
+impl FromStr for CodeHash {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
     }
 }
 
-impl From<String> for CodeHash {
-    fn from(s: String) -> Self {
-        todo!()
+impl<T: AsRef<[u8]>> From<&T> for CodeHash {
+    fn from(bytes: &T) -> Self {
+        Self(bytes.as_ref().to_vec())
     }
 }
 
@@ -77,6 +80,8 @@ impl<'de> Deserialize<'de> for CodeHash {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use near_sdk::serde_json;
 
     use crate::CodeHash;
@@ -94,6 +99,13 @@ mod tests {
         let expected = CodeHash("hello, world".as_bytes().to_vec());
         let actual: CodeHash =
             serde_json::from_str("\"2yGEbwRGRKr9Udf39\"").expect("Cannot deserialize");
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn from_str() {
+        let expected = CodeHash("hello, world".as_bytes().to_vec());
+        let actual = CodeHash::from_str("\"2yGEbwRGRKr9Udf39\"").expect("Cannot deserialize");
         assert_eq!(expected, actual);
     }
 }
