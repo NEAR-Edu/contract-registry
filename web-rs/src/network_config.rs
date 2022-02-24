@@ -6,12 +6,12 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NetworkConfig {
-    network_id: String,
-    node_url: String,
-    archival_url: String,
-    wallet_url: String,
-    helper_url: String,
-    explorer_url: String,
+    pub network_id: String,
+    pub node_url: String,
+    pub archival_url: String,
+    pub wallet_url: String,
+    pub helper_url: String,
+    pub explorer_url: String,
 }
 
 pub fn load(path: &str) -> NetworkConfig {
