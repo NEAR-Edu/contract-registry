@@ -3,10 +3,12 @@ use std::env::var;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::Filter;
 
-mod circleci_artifacts;
-mod circleci_verify;
+use crate::{
+    circleci::{artifacts::VerifierClient, verify::verify_filter},
+    env::CIRCLECI_WEBHOOK_SECRET,
+};
+mod circleci;
 mod env;
-use crate::{circleci_artifacts::VerifierClient, env::CIRCLECI_WEBHOOK_SECRET};
 
 #[tokio::main]
 async fn main() {
@@ -23,16 +25,6 @@ async fn main() {
     let metadata = vclient.assemble(artifacts).await.unwrap();
     println!("{}", &metadata.code_hash);
 
-    // vclient.
-
-    // let artifacts = circleci_artifacts::get_job_artifacts(
-    //   &project_slug,
-    //   "24",
-    //   &api_key,
-    // )
-    // .await;
-    // println!("{:?}", artifacts);
-
     return;
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
@@ -45,7 +37,7 @@ async fn main() {
     let circleci_webhook_secret = var(CIRCLECI_WEBHOOK_SECRET).unwrap();
 
     let guarded = warp::path!("circle")
-        .and(circleci_verify::verify_filter(&circleci_webhook_secret))
+        .and(verify_filter(&circleci_webhook_secret))
         .map(|| "ok without pass!");
 
     let routes = guarded.with(warp::trace::request());
