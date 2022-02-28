@@ -1,4 +1,4 @@
-use data_types::{
+use model::{
     code_hash::CodeHash,
     verification::{Verification, VerificationRequest, VerificationStatus},
 };

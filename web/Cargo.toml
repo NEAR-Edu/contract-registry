@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 bs58 = "0.4.0"
-data-types = { path="../data-types" }
+model = { path="../model" }
 dotenv = "0.15.0"
 futures = "0.3.21"
 hex = "0.4.3"

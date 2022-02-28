@@ -440,15 +440,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "data-types"
-version = "0.1.0"
-dependencies = [
- "bs58",
- "near-sdk",
- "sha2 0.10.2",
-]
-
-[[package]]
 name = "derive_more"
 version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1072,6 +1063,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "model"
+version = "0.1.0"
+dependencies = [
+ "bs58",
+ "near-sdk",
+ "sha2 0.10.2",
+]
+
+[[package]]
 name = "multipart"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1487,7 +1487,7 @@ name = "near-smart-contract-rust-template"
 version = "0.1.0"
 dependencies = [
  "bs58",
- "data-types",
+ "model",
  "near-sdk",
 ]
 
@@ -2857,11 +2857,11 @@ name = "web-rs"
 version = "0.1.0"
 dependencies = [
  "bs58",
- "data-types",
  "dotenv",
  "futures",
  "hex",
  "hmac",
+ "model",
  "near-jsonrpc-client",
  "near-jsonrpc-primitives",
  "near-primitives 0.12.0",

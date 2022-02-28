@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "data-types",
+  "model",
   "contract",
-  "web-rs",
+  "web",
 ]

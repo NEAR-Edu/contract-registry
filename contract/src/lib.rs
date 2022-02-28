@@ -6,7 +6,7 @@ pub use contract::*;
 
 #[cfg(test)]
 mod tests {
-    use data_types::verification::VerificationStatus;
+    use model::verification::VerificationStatus;
     use near_sdk::{test_utils::*, testing_env, AccountId};
 
     use crate::{ownership::Ownable, Contract};
