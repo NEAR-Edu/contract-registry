@@ -10,9 +10,9 @@ use crate::{
 };
 
 mod circleci;
-mod network_config;
 mod contract_interaction;
 mod env;
+mod network_config;
 
 #[tokio::main]
 async fn main() {
@@ -24,9 +24,18 @@ async fn main() {
 
     let network_config = network_config::load(&network_config_path);
 
-    println!("Connecting to {} at {}...", network_config.network_id, network_config.node_url);
+    println!(
+        "Connecting to {} at {}...",
+        network_config.network_id, network_config.node_url
+    );
 
-    contract_interaction::poll(&network_config, "dev-1643154643102-83535221687437".parse().unwrap(), "own_get_owner".to_string(), &json!({})).await;
+    contract_interaction::poll(
+        &network_config,
+        "dev-1643154643102-83535221687437".parse().unwrap(),
+        "own_get_owner".to_string(),
+        &json!({}),
+    )
+    .await;
 
     // let x = contract_interaction::call(&network_config).await;
 

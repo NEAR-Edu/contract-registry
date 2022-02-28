@@ -1,12 +1,9 @@
-use std::io::Error;
-
 use near_jsonrpc_client::{methods, JsonRpcClient};
 use near_jsonrpc_primitives::types::query::QueryResponseKind;
 use near_primitives::types::{AccountId, BlockReference, Finality, FunctionArgs};
 use near_primitives::views::QueryRequest;
 
-use serde::Deserialize;
-use serde_json::{from_slice, json};
+use serde_json::from_slice;
 use thiserror::Error;
 use tokio::time;
 
@@ -34,7 +31,8 @@ pub async fn poll(
             method_name.clone(),
             args,
         )
-        .await.unwrap();
+        .await
+        .unwrap();
         println!("Got: {}", value.as_str().unwrap());
     }
 }
