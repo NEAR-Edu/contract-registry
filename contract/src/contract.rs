@@ -1,4 +1,21 @@
-use crate::*;
+use data_types::{
+    code_hash::CodeHash,
+    verification::{Verification, VerificationRequest, VerificationStatus},
+};
+use near_sdk::{
+    assert_one_yocto,
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::{UnorderedMap, Vector},
+    env,
+    json_types::{U128, U64},
+    near_bindgen, require, AccountId, BorshStorageKey, PanicOnDefault,
+};
+
+use crate::{
+    impl_ownership,
+    ownership::{Ownable, Ownership},
+    utils::storage_refund,
+};
 
 #[derive(BorshStorageKey, BorshSerialize)]
 enum StorageKey {
@@ -12,8 +29,8 @@ enum StorageKey {
 pub struct Contract {
     pub ownership: Ownership,
     pub requests: Vector<VerificationRequest>,
-    pub verifications: UnorderedMap<CodeHash, VerificationResult>,
-    pub verification_fee: Balance,
+    pub verifications: UnorderedMap<CodeHash, Verification>,
+    pub verification_fee: u128,
 }
 
 #[near_bindgen]
@@ -43,14 +60,14 @@ impl Contract {
         self.requests.get(id.into())
     }
 
-    pub fn get_verification_result(&self, id: U64) -> Option<VerificationResult> {
-        self.requests
-            .get(id.into())
-            .and_then(|v| v.code_hash)
-            .and_then(|h| self.verifications.get(&h))
+    pub fn get_verification_result(&self, request_id: U64) -> Option<Verification> {
+        let request_id = u64::from(request_id);
+        self.verifications
+            .values()
+            .find(|v| v.request_id == request_id)
     }
 
-    pub fn verify_code_hash(&self, code_hash: CodeHash) -> Option<VerificationResult> {
+    pub fn verify_code_hash(&self, code_hash: CodeHash) -> Option<Verification> {
         self.verifications.get(&code_hash)
     }
 
@@ -84,9 +101,8 @@ impl Contract {
         let request = VerificationRequest {
             id,
             repository,
-            fee: verification_fee,
+            fee: verification_fee.into(),
             status: VerificationStatus::PENDING,
-            code_hash: None,
             created_at: now,
             updated_at: now,
         };
@@ -98,7 +114,7 @@ impl Contract {
         request
     }
 
-    fn resolve(&mut self, id: u64, result: Option<VerificationResult>) {
+    fn resolve(&mut self, id: u64, result: Option<Verification>) {
         let attached_deposit = env::attached_deposit();
         require!(attached_deposit > 0, "Deposit required");
 
@@ -124,7 +140,6 @@ impl Contract {
                 &VerificationRequest {
                     status: VerificationStatus::SUCCESS,
                     updated_at: now,
-                    code_hash: Some(result.code_hash.clone()),
                     ..request
                 },
             );
@@ -143,8 +158,8 @@ impl Contract {
     }
 
     #[payable]
-    pub fn verification_success(&mut self, result: VerificationResult) {
-        self.resolve(result.verification_request_id, Some(result));
+    pub fn verification_success(&mut self, result: Verification) {
+        self.resolve(result.request_id, Some(result));
     }
 
     #[payable]

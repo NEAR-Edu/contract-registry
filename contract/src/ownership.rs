@@ -1,4 +1,10 @@
-use crate::*;
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    collections::LazyOption,
+    env, require, AccountId, IntoStorageKey,
+};
+
+use crate::utils::prefix_key;
 
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Ownership {

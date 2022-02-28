@@ -1,27 +1,15 @@
-use near_sdk::{
-    borsh::{self, *},
-    collections::*,
-    json_types::*,
-    serde::{self, *},
-    *,
-};
-
-mod utils;
-pub use utils::*;
-
-use data_types::code_hash::CodeHash;
-use data_types::verification::*;
-
 mod ownership;
-pub use ownership::*;
+mod utils;
 
 mod contract;
 pub use contract::*;
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
-    use near_sdk::{test_utils::*, testing_env};
+    use data_types::verification::VerificationStatus;
+    use near_sdk::{test_utils::*, testing_env, AccountId};
+
+    use crate::{ownership::Ownable, Contract};
 
     const ONE_NEAR: u128 = u128::pow(10, 24);
 
@@ -99,7 +87,11 @@ mod tests {
             "Repository URL set correctly"
         );
 
-        assert_eq!(request.fee, VERIFICATION_FEE, "Fee set correctly");
+        assert_eq!(
+            u128::from(request.fee),
+            VERIFICATION_FEE,
+            "Fee set correctly"
+        );
 
         assert_eq!(
             request.status,
