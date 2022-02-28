@@ -1,4 +1,5 @@
 use dotenv;
+use serde_json::json;
 use std::env::var;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::Filter;
@@ -25,7 +26,9 @@ async fn main() {
 
     println!("Connecting to {} at {}...", network_config.network_id, network_config.node_url);
 
-    let x = contract_interaction::call(&network_config).await;
+    contract_interaction::poll(&network_config, "dev-1643154643102-83535221687437".parse().unwrap(), "own_get_owner".to_string(), &json!({})).await;
+
+    // let x = contract_interaction::call(&network_config).await;
 
     // let project_slug = std::env::var(env::CIRCLECI_PROJECT_SLUG).unwrap();
     // let api_key = std::env::var(env::CIRCLECI_API_KEY).unwrap();
