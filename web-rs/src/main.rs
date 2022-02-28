@@ -1,6 +1,7 @@
 use dotenv;
 use serde_json::json;
 use std::env::var;
+use tokio::sync::mpsc;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::Filter;
 
@@ -29,10 +30,12 @@ async fn main() {
         network_config.network_id, network_config.node_url
     );
 
+    // let (tx, mut rx) = mpsc::channel::<>(16);
+
     contract_interaction::poll(
         &network_config,
-        "dev-1643154643102-83535221687437".parse().unwrap(),
-        "own_get_owner".to_string(),
+        "dev-1645817690601-65474141750146".parse().unwrap(),
+        "get_pending_requests".to_string(),
         &json!({}),
     )
     .await;

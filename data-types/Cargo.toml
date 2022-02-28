@@ -1,5 +1,5 @@
 [package]
-name = "code-hash"
+name = "data-types"
 version = "0.1.0"
 edition = "2021"
 

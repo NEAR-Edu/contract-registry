@@ -1,5 +1,5 @@
-mod code_hash;
-pub use code_hash::*;
+pub mod code_hash;
+pub mod verification;
 
 #[cfg(test)]
 mod tests {

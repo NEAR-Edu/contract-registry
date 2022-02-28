@@ -1,4 +1,4 @@
-use code_hash::CodeHash;
+use data_types::code_hash::CodeHash;
 use std::collections::HashMap;
 use thiserror::Error;
 

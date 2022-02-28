@@ -9,11 +9,8 @@ use near_sdk::{
 mod utils;
 pub use utils::*;
 
-mod code_hash;
-pub use code_hash::*;
-
-mod verification;
-pub use verification::*;
+use data_types::code_hash::CodeHash;
+use data_types::verification::*;
 
 mod ownership;
 pub use ownership::*;

@@ -350,15 +350,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "code-hash"
-version = "0.1.0"
-dependencies = [
- "bs58",
- "near-sdk",
- "sha2 0.10.2",
-]
-
-[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -446,6 +437,15 @@ dependencies = [
  "rand_core 0.5.1",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "data-types"
+version = "0.1.0"
+dependencies = [
+ "bs58",
+ "near-sdk",
+ "sha2 0.10.2",
 ]
 
 [[package]]
@@ -1487,6 +1487,7 @@ name = "near-smart-contract-rust-template"
 version = "0.1.0"
 dependencies = [
  "bs58",
+ "data-types",
  "near-sdk",
 ]
 
@@ -2856,7 +2857,7 @@ name = "web-rs"
 version = "0.1.0"
 dependencies = [
  "bs58",
- "code-hash",
+ "data-types",
  "dotenv",
  "futures",
  "hex",

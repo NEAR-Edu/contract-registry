@@ -1,4 +1,10 @@
-use crate::*;
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    serde::{Deserialize, Serialize},
+    Balance,
+};
+
+use crate::code_hash::CodeHash;
 
 #[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug)]
 #[serde(crate = "near_sdk::serde")]

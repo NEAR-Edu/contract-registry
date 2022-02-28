@@ -1,6 +1,6 @@
 [workspace]
 members = [
+  "data-types",
   "contract",
   "web-rs",
-  "code-hash",
 ]

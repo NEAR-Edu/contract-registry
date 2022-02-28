@@ -67,7 +67,14 @@ impl Contract {
         require!(attached_deposit > 0, "Deposit required");
 
         let verification_fee: u128 = fee.into();
-        require!(attached_deposit >= verification_fee, "Insufficient deposit");
+        require!(
+            attached_deposit >= verification_fee,
+            "Deposit less than indicated fee"
+        );
+        require!(
+            verification_fee >= self.verification_fee,
+            "Fee less than minimum requirement"
+        );
 
         let storage_usage_start = env::storage_usage();
 

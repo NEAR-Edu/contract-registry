@@ -84,7 +84,7 @@ mod tests {
 
     use near_sdk::serde_json;
 
-    use crate::CodeHash;
+    use super::CodeHash;
 
     #[test]
     fn code_hash_serialize() {
