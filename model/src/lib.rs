@@ -1,4 +1,5 @@
 pub mod code_hash;
+pub mod sequential_id;
 pub mod verification;
 
 #[cfg(test)]

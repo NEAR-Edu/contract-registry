@@ -4,9 +4,9 @@ use near_sdk::{
     serde::{Deserialize, Serialize},
 };
 
-use crate::code_hash::CodeHash;
+use crate::{code_hash::CodeHash, sequential_id::SequentialId};
 
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug, Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub enum VerificationStatus {
     PENDING,
@@ -27,7 +27,7 @@ pub struct Verification {
     pub request_id: u64,
 }
 
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, PartialEq, Debug, Clone)]
 #[serde(crate = "near_sdk::serde")]
 pub struct VerificationRequest {
     pub id: u64,
@@ -36,4 +36,30 @@ pub struct VerificationRequest {
     pub status: VerificationStatus,
     pub created_at: u64,
     pub updated_at: u64,
+}
+
+impl SequentialId<u64> for VerificationRequest {
+    fn seq_id(&self) -> u64 {
+        self.id
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use near_sdk::{serde_json, };
+
+    use super::VerificationRequest;
+
+    #[test]
+    fn test() {
+        let s = serde_json::to_string(&VerificationRequest {
+            id: 0,
+            repository: "repository".to_string(),
+            fee: (3u128).into(),
+            status: super::VerificationStatus::PENDING,
+            created_at: 0,
+            updated_at: 0,
+        });
+        println!("{:?}", s);
+    }
 }
