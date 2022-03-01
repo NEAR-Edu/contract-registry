@@ -1,4 +1,6 @@
+use core::time;
 use dotenv;
+use model::verification::VerificationRequest;
 use serde_json::json;
 use std::env::var;
 use tokio::sync::mpsc;
@@ -30,15 +32,27 @@ async fn main() {
         network_config.network_id, network_config.node_url
     );
 
-    // let (tx, mut rx) = mpsc::channel::<>(16);
+    let (tx, mut rx) = mpsc::channel::<VerificationRequest>(16);
 
-    contract_interaction::poll(
-        &network_config,
-        "dev-1645817690601-65474141750146".parse().unwrap(),
-        "get_pending_requests".to_string(),
-        &json!({}),
-    )
-    .await;
+    tokio::spawn(async move {
+        println!("Inside thread");
+        contract_interaction::poll_for_new(
+            &network_config,
+            "dev-1646096718805-56985728197870".parse().unwrap(),
+            "get_pending_requests".to_string(),
+            &json!({}),
+            tx,
+            time::Duration::from_secs(5),
+        )
+        .await;
+        println!("After infinite await.");
+    });
+
+    println!("Before loop");
+    while let Some(v) = rx.recv().await {
+        println!("Received: {:?}", v);
+    }
+    println!("After loop");
 
     // let x = contract_interaction::call(&network_config).await;
 
