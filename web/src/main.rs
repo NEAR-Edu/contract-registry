@@ -3,7 +3,7 @@ use dotenv;
 use model::verification::VerificationRequest;
 use serde_json::json;
 use std::env::var;
-use tokio::sync::mpsc;
+use tokio::sync::mpsc::{self, Receiver};
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::Filter;
 
@@ -32,21 +32,17 @@ async fn main() {
         network_config.network_id, network_config.node_url
     );
 
-    let (tx, mut rx) = mpsc::channel::<VerificationRequest>(16);
+    // let (tx, mut rx) = mpsc::channel::<VerificationRequest>(16);
 
-    tokio::spawn(async move {
-        println!("Inside thread");
-        contract_interaction::poll_for_new(
-            &network_config,
-            "dev-1646096718805-56985728197870".parse().unwrap(),
-            "get_pending_requests".to_string(),
-            &json!({}),
-            tx,
-            time::Duration::from_secs(5),
-        )
-        .await;
-        println!("After infinite await.");
-    });
+    // tokio::spawn(async move {
+    let mut rx: Receiver<VerificationRequest> = contract_interaction::watch::list(
+        network_config,
+        std::env::var(env::CONTRACT_ID).unwrap().parse().unwrap(),
+        "get_pending_requests".to_string(),
+        json!({}),
+        time::Duration::from_secs(5),
+    );
+    // });
 
     println!("Before loop");
     while let Some(v) = rx.recv().await {
