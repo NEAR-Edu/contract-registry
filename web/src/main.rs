@@ -1,14 +1,14 @@
-use core::time;
 use dotenv;
-use model::verification::VerificationRequest;
+use near_crypto::{InMemorySigner, SecretKey};
+use near_jsonrpc_client::JsonRpcClient;
+use near_primitives::types::AccountId;
 use serde_json::json;
-use std::env::var;
-use tokio::sync::mpsc::{self, Receiver};
+use std::{env::var, str::FromStr};
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::Filter;
 
 use crate::{
-    circleci::{artifacts::VerifierClient, verify::verify_filter},
+    circleci::verify::verify_filter, contract_interaction::change::change,
     env::CIRCLECI_WEBHOOK_SECRET,
 };
 
@@ -32,23 +32,37 @@ async fn main() {
         network_config.network_id, network_config.node_url
     );
 
-    // let (tx, mut rx) = mpsc::channel::<VerificationRequest>(16);
+    let client = JsonRpcClient::connect(network_config.node_url);
+    let account_id: AccountId = std::env::var(env::ACCOUNT_ID).unwrap().parse().unwrap();
+    let contract_id: AccountId = std::env::var(env::CONTRACT_ID).unwrap().parse().unwrap();
+    let secret_key = SecretKey::from_str(&std::env::var(env::SECRET_KEY).unwrap()).unwrap();
+    let signer = InMemorySigner::from_secret_key(account_id, secret_key);
 
-    // tokio::spawn(async move {
-    let mut rx: Receiver<VerificationRequest> = contract_interaction::watch::list(
-        network_config,
-        std::env::var(env::CONTRACT_ID).unwrap().parse().unwrap(),
-        "get_pending_requests".to_string(),
-        json!({}),
-        time::Duration::from_secs(5),
-    );
-    // });
+    let value = change(
+        &client,
+        &signer,
+        &contract_id,
+        "verification_failure",
+        json!({"id":"0"}),
+        1,
+    )
+    .await;
 
-    println!("Before loop");
-    while let Some(v) = rx.recv().await {
-        println!("Received: {:?}", v);
-    }
-    println!("After loop");
+    println!("Value: {:?}", value);
+
+    // let mut rx: Receiver<VerificationRequest> = contract_interaction::watch::list(
+    //     network_config,
+    //     std::env::var(env::CONTRACT_ID).unwrap().parse().unwrap(),
+    //     "get_pending_requests".to_string(),
+    //     json!({}),
+    //     time::Duration::from_secs(5),
+    // );
+
+    // println!("Before loop");
+    // while let Some(v) = rx.recv().await {
+    //     println!("Received: {:?}", v);
+    // }
+    // println!("After loop");
 
     // let x = contract_interaction::call(&network_config).await;
 
