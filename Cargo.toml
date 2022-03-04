@@ -2,5 +2,5 @@
 members = [
   "model",
   "contract",
-  "web",
+  "service",
 ]
