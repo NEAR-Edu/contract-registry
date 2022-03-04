@@ -92,7 +92,6 @@ pub async fn wait_for_status(
     }
 }
 
-
 #[derive(Debug, Error)]
 pub enum ContractInteractionError {
     #[error("Incompatible response type from RPC {0:?}")]

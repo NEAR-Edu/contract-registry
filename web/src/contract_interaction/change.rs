@@ -1,8 +1,5 @@
 use near_crypto::{InMemorySigner, Signer};
-use near_jsonrpc_client::{
-    methods,
-    JsonRpcClient,
-};
+use near_jsonrpc_client::{methods, JsonRpcClient};
 
 use near_primitives::{
     transaction::{Action, FunctionCallAction, Transaction},

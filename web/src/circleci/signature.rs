@@ -1,10 +1,11 @@
+/// https://circleci.com/docs/2.0/webhooks/#headers
 use hex;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use warp::{reject, Filter};
 
 const SIGNATURE_VERSION: &'static str = "v1";
-const HEADER: &'static str = "circleci-signature";
+const SIGNATURE_HEADER: &'static str = "circleci-signature";
 
 pub fn extract_compatible_signature(header: &str) -> Option<&str> {
     header
@@ -35,17 +36,15 @@ impl reject::Reject for InvalidSignature {}
 struct IncompatibleSignatureVersion;
 impl reject::Reject for IncompatibleSignatureVersion {}
 
-pub fn verify_filter(
-    secret: &str,
-) -> impl Filter<Extract = (), Error = warp::Rejection> + Clone + '_ {
-    warp::header::<String>(HEADER)
+pub fn verify_filter(secret: String) -> impl Filter<Extract = (), Error = warp::Rejection> + Clone {
+    warp::header::<String>(SIGNATURE_HEADER)
         .and(warp::body::bytes())
         .and_then(move |header: String, body: warp::hyper::body::Bytes| {
             let signature = extract_compatible_signature(&header);
             match signature {
                 None => futures::future::err(reject::custom(IncompatibleSignatureVersion)),
                 Some(signature) => {
-                    if verify_signature(secret, signature, &body) {
+                    if verify_signature(&secret, signature, &body) {
                         futures::future::ok(())
                     } else {
                         futures::future::err(reject::custom(InvalidSignature))
