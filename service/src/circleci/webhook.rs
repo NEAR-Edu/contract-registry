@@ -33,6 +33,11 @@ pub async fn handler(
     let payload = serde_json::from_slice::<JobCompletedWebhookPayload>(&body)
         .map_err(|e| WebhookError::from(e))?;
     let job_number = payload.job.number.to_string();
+    println!("Webhook triggered for job {job_number}");
     let meta = request_job(&client, project_slug, job_number).await?;
+    println!(
+        "Webhook results:\n\tbranch: {}\n\tcommit: {}\n\tcode hash: {}\n\tcode url: {}",
+        meta.branch, meta.commit, meta.code_hash, meta.code_url
+    );
     Ok(format!("{}", meta.code_hash))
 }

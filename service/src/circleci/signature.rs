@@ -17,10 +17,7 @@ pub fn extract_compatible_signature(header: &str) -> Option<&str> {
 }
 
 pub fn verify_signature(secret: &str, signature: &str, body: &[u8]) -> bool {
-    println!(
-        "secret: {}, signature: {}, body: {:?}",
-        secret, signature, body
-    );
+    println!("Verifying signature");
 
     let mut h = Hmac::<Sha256>::new_from_slice(secret.as_bytes()).unwrap();
     h.update(body);
@@ -36,7 +33,9 @@ impl reject::Reject for InvalidSignature {}
 struct IncompatibleSignatureVersion;
 impl reject::Reject for IncompatibleSignatureVersion {}
 
-pub fn verify_filter(secret: String) -> impl Filter<Extract = (warp::hyper::body::Bytes,), Error = warp::Rejection> + Clone {
+pub fn verify_filter(
+    secret: String,
+) -> impl Filter<Extract = (warp::hyper::body::Bytes,), Error = warp::Rejection> + Clone {
     warp::header::<String>(SIGNATURE_HEADER)
         .and(warp::body::bytes())
         .and_then(move |header: String, body: warp::hyper::body::Bytes| {
@@ -45,8 +44,10 @@ pub fn verify_filter(secret: String) -> impl Filter<Extract = (warp::hyper::body
                 None => futures::future::err(reject::custom(IncompatibleSignatureVersion)),
                 Some(signature) => {
                     if verify_signature(&secret, signature, &body) {
+                        println!("Valid signature");
                         futures::future::ok(body)
                     } else {
+                        println!("Invalid signature");
                         futures::future::err(reject::custom(InvalidSignature))
                     }
                 }

@@ -1,5 +1,9 @@
+use futures::{future, Future};
 use model::code_hash::CodeHash;
 use std::collections::HashMap;
+use thiserror::Error;
+use tokio::task::JoinError;
+use warp::reject::Reject;
 
 use reqwest::Client;
 
@@ -9,9 +13,12 @@ pub async fn request_job(
     client: &Client,
     project_slug: String,
     job_number: String,
-) -> Result<VerificationMetadata, CircleCiError> {
+) -> Result<VerificationMetadata, ParallelError<CircleCiError>> {
     let artifacts = get_job_artifacts(client, &project_slug, &job_number).await?;
-    let metadata = assemble(client, artifacts).await?;
+    let metadata = assemble(client, artifacts).await.map_err(|e| match e {
+        ParallelError::TaskError(f) => ParallelError::TaskError(CircleCiError::ReqwestError(f)),
+        ParallelError::JoinError(f) => ParallelError::JoinError(f),
+    })?;
     Ok(metadata)
 }
 
@@ -51,40 +58,63 @@ pub async fn get_job_artifacts(
         .ok_or(CircleCiError::JsonSchemaMismatch)
 }
 
+#[derive(Error, Debug)]
+pub enum ParallelError<E: std::error::Error> {
+    #[error("Join error: {0}")]
+    JoinError(JoinError),
+    #[error("Task error: {0}")]
+    TaskError(#[from] E),
+}
+
+impl<E: std::error::Error + Send + Sync + 'static> Reject for ParallelError<E> {}
+
+pub async fn parallel_map<T, I, F, O, V, E>(items: I, f: F) -> Result<Vec<V>, ParallelError<E>>
+where
+    T: Send + Sync + 'static,
+    I: IntoIterator<Item = T>,
+    F: Fn(T) -> O,
+    O: Future<Output = Result<V, E>> + Send + Sync + 'static,
+    V: Send + Sync + 'static,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    Ok(future::join_all(items.into_iter().map(|item| {
+        let fut = f(item);
+        tokio::spawn(async move { fut.await })
+    }))
+    .await
+    .into_iter()
+    .collect::<Result<Vec<_>, JoinError>>()
+    .map_err(|e| ParallelError::JoinError(e))?
+    .into_iter()
+    .collect::<Result<Vec<_>, E>>()?)
+}
+
 pub async fn assemble(
     client: &Client,
     artifacts: HashMap<String, String>,
-) -> Result<VerificationMetadata, reqwest::Error> {
-    let repo = client
-        .get(&artifacts["git/repo.txt"])
-        .send()
-        .await?
-        .text()
-        .await?;
-    let remote = client
-        .get(&artifacts["git/remote.txt"])
-        .send()
-        .await?
-        .text()
-        .await?;
-    let branch = client
-        .get(&artifacts["git/branch.txt"])
-        .send()
-        .await?
-        .text()
-        .await?;
-    let commit = client
-        .get(&artifacts["git/commit.txt"])
-        .send()
-        .await?
-        .text()
-        .await?;
-    let wasm = client
-        .get(&artifacts["out/out.wasm"])
-        .send()
-        .await?
-        .bytes()
-        .await?;
+) -> Result<VerificationMetadata, ParallelError<reqwest::Error>> {
+    let responses = parallel_map(
+        vec![
+            "git/repo.txt",
+            "git/remote.txt",
+            "git/branch.txt",
+            "git/commit.txt",
+        ],
+        |path| {
+            let url = &artifacts[path];
+            client.get(url).send()
+        },
+    )
+    .await?;
+    let to_text = parallel_map(responses, |r| r.text()).await?;
+
+    let (repo, remote, branch, commit) = match &to_text[..] {
+        [a, b, c, d] => (a, b, c, d),
+        _ => unreachable!(),
+    };
+
+    let code_url = (&artifacts["out/out.wasm"]).to_string();
+    let wasm = client.get(&code_url).send().await?.bytes().await?;
 
     let code = wasm.as_ref().to_vec();
     let code_hash = CodeHash::hash_bytes(&code);
@@ -93,7 +123,7 @@ pub async fn assemble(
         remote: remote.trim().to_string(),
         branch: branch.trim().to_string(),
         commit: commit.trim().to_string(),
-        code,
+        code_url,
         code_hash,
     })
 }
@@ -104,6 +134,6 @@ pub struct VerificationMetadata {
     pub remote: String,
     pub branch: String,
     pub commit: String,
-    pub code: Vec<u8>,
+    pub code_url: String,
     pub code_hash: CodeHash,
 }
