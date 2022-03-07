@@ -8,4 +8,4 @@ WORKDIR /usr/src/app/service
 RUN cargo install --path .
 
 WORKDIR /usr/src/app
-CMD ["service/contract-registry-service"]
+CMD ["contract-registry-service"]
