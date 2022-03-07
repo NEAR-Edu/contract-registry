@@ -87,10 +87,9 @@ async fn main() {
 
     let guarded = warp::path!("webhook")
         .and(warp::body::content_length_limit(1024 * 32 /* 32kb */))
-        .and(verify_filter(circleci_webhook_secret))
         .and(with(circleci_reqwest_client))
         .and(with(project_slug))
-        .and(warp::body::json::<JobCompletedWebhookPayload>())
+        .and(verify_filter(circleci_webhook_secret))
         .and_then(webhook::handler);
 
     let routes = guarded.with(warp::trace::request());

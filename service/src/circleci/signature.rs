@@ -36,7 +36,7 @@ impl reject::Reject for InvalidSignature {}
 struct IncompatibleSignatureVersion;
 impl reject::Reject for IncompatibleSignatureVersion {}
 
-pub fn verify_filter(secret: String) -> impl Filter<Extract = (), Error = warp::Rejection> + Clone {
+pub fn verify_filter(secret: String) -> impl Filter<Extract = (warp::hyper::body::Bytes,), Error = warp::Rejection> + Clone {
     warp::header::<String>(SIGNATURE_HEADER)
         .and(warp::body::bytes())
         .and_then(move |header: String, body: warp::hyper::body::Bytes| {
@@ -45,12 +45,11 @@ pub fn verify_filter(secret: String) -> impl Filter<Extract = (), Error = warp::
                 None => futures::future::err(reject::custom(IncompatibleSignatureVersion)),
                 Some(signature) => {
                     if verify_signature(&secret, signature, &body) {
-                        futures::future::ok(())
+                        futures::future::ok(body)
                     } else {
                         futures::future::err(reject::custom(InvalidSignature))
                     }
                 }
             }
         })
-        .untuple_one()
 }
