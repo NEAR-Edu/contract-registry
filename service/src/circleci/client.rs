@@ -3,8 +3,7 @@ use std::collections::HashMap;
 
 use reqwest::Client;
 
-use super::{error::CircleCiError};
-
+use super::error::CircleCiError;
 
 pub async fn request_job(
     client: &Client,

@@ -1,0 +1,8 @@
+version: '3'
+services:
+  contract-registry-service:
+    build:
+      context: .
+      dockerfile: ./service/Dockerfile
+    ports:
+     - "8000:8000"

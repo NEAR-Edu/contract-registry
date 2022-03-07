@@ -1,29 +1,15 @@
 use dotenv;
-use futures::stream;
-use model::code_hash::CodeHash;
-use near_crypto::{InMemorySigner, SecretKey};
-use near_jsonrpc_client::{header::HeaderValue, JsonRpcClient};
-use near_primitives::types::AccountId;
-use reqwest::{header::HeaderMap, Client, StatusCode};
-use serde_json::json;
-use std::{
-    collections::HashMap,
-    convert::Infallible,
-    env::var,
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
+use near_jsonrpc_client::header::HeaderValue;
+use reqwest::{header::HeaderMap, Client};
+use std::{convert::Infallible, env::var, str::FromStr};
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{body, Filter, Rejection, Reply};
+use warp::Filter;
 
 use crate::{
     circleci::{
-        client::{self, request_job, VerificationMetadata},
-        error::CircleCiError,
         signature::verify_filter,
         webhook::{self, JobCompletedWebhookPayload},
     },
-    contract_interaction::change::change,
     env::CIRCLECI_WEBHOOK_SECRET,
 };
 
@@ -109,5 +95,13 @@ async fn main() {
 
     let routes = guarded.with(warp::trace::request());
 
-    warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
+    warp::serve(routes)
+        .run((
+            [127, 0, 0, 1],
+            std::env::var(env::PORT)
+                .ok()
+                .and_then(|s| u16::from_str(&s).ok())
+                .unwrap_or(8000),
+        ))
+        .await;
 }

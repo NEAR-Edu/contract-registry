@@ -1,4 +1,6 @@
 #[allow(dead_code)]
+pub const PORT: &'static str = "PORT";
+#[allow(dead_code)]
 pub const CIRCLECI_WEBHOOK_SECRET: &'static str = "CIRCLECI_WEBHOOK_SECRET";
 #[allow(dead_code)]
 pub const CIRCLECI_PROJECT_SLUG: &'static str = "CIRCLECI_PROJECT_SLUG";

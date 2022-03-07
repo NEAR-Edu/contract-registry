@@ -350,6 +350,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "contract-registry-service"
+version = "0.1.0"
+dependencies = [
+ "bs58",
+ "dotenv",
+ "futures",
+ "hex",
+ "hmac",
+ "model",
+ "near-crypto 0.12.0",
+ "near-jsonrpc-client",
+ "near-jsonrpc-primitives",
+ "near-primitives 0.12.0",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.10.2",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "warp",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2851,31 +2876,6 @@ name = "wasm-bindgen-shared"
 version = "0.2.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d958d035c4438e28c70e4321a2911302f10135ce78a9c7834c0cab4123d06a2"
-
-[[package]]
-name = "web-rs"
-version = "0.1.0"
-dependencies = [
- "bs58",
- "dotenv",
- "futures",
- "hex",
- "hmac",
- "model",
- "near-crypto 0.12.0",
- "near-jsonrpc-client",
- "near-jsonrpc-primitives",
- "near-primitives 0.12.0",
- "reqwest",
- "serde",
- "serde_json",
- "sha2 0.10.2",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "warp",
-]
 
 [[package]]
 name = "web-sys"

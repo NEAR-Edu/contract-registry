@@ -1,6 +1,6 @@
 use std::io::Repeat;
 
-use reqwest::{StatusCode, Client};
+use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use warp::{Rejection, Reply};
 
