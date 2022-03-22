@@ -16,3 +16,5 @@ pub const CONTRACT_ID: &'static str = "CONTRACT_ID";
 pub const ACCOUNT_ID: &'static str = "ACCOUNT_ID";
 #[allow(dead_code)]
 pub const SECRET_KEY: &'static str = "SECRET_KEY";
+#[allow(dead_code)]
+pub const REPOSITORY_PATH: &'static str = "SECRET_KEY";

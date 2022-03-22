@@ -95,7 +95,7 @@ pub async fn assemble(
 ) -> Result<VerificationMetadata, ParallelError<reqwest::Error>> {
     let responses = parallel_map(
         vec![
-            "git/repo.txt",
+            "git/repository.txt",
             "git/remote.txt",
             "git/branch.txt",
             "git/commit.txt",
@@ -108,7 +108,7 @@ pub async fn assemble(
     .await?;
     let to_text = parallel_map(responses, |r| r.text()).await?;
 
-    let (repo, remote, branch, commit) = match &to_text[..] {
+    let (repository, remote, branch, commit) = match &to_text[..] {
         [a, b, c, d] => (a, b, c, d),
         _ => unreachable!(),
     };
@@ -119,7 +119,7 @@ pub async fn assemble(
     let code = wasm.as_ref().to_vec();
     let code_hash = CodeHash::hash_bytes(&code);
     Ok(VerificationMetadata {
-        repo: repo.trim().to_string(),
+        repo: repository.trim().to_string(),
         remote: remote.trim().to_string(),
         branch: branch.trim().to_string(),
         commit: commit.trim().to_string(),

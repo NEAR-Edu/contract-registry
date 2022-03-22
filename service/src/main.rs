@@ -17,6 +17,7 @@ mod circleci;
 mod contract_interaction;
 mod env;
 mod network_config;
+mod repository;
 
 const TOKEN_HEADER: &'static str = "Circle-Token";
 

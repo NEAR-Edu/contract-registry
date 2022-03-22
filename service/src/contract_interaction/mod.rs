@@ -3,7 +3,7 @@ use std::time;
 use near_crypto::{InMemorySigner, Signer};
 use near_jsonrpc_client::{
     methods::{
-        self, broadcast_tx_commit::RpcTransactionError, query::RpcQueryRequest, tx::TransactionInfo,
+        self, broadcast_tx_commit::RpcTransactionError, query::RpcQueryRequest, tx::TransactionInfo, RpcHandlerError,
     },
     JsonRpcClient,
 };
@@ -24,6 +24,8 @@ pub mod watch;
 pub enum TransactionStatusError {
     #[error("JSON RPC error: {0}")]
     JsonRpcError(#[from] near_jsonrpc_client::errors::JsonRpcError<RpcTransactionError>),
+    // #[error("RPC Handler Error: {0}")]
+    // RpcHandlerError(#[from] Box<dyn RpcHandlerError>),
     #[error("Execution error: {0}")]
     ExecutionError(near_primitives::errors::TxExecutionError),
 }
