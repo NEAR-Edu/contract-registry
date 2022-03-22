@@ -32,6 +32,8 @@ pub struct Verification {
 pub struct VerificationRequest {
     pub id: u64,
     pub repository: String,
+    pub path: String,
+    pub checkout: String,
     pub fee: U128,
     pub status: VerificationStatus,
     pub created_at: u64,
@@ -55,6 +57,8 @@ mod tests {
         let s = serde_json::to_string(&VerificationRequest {
             id: 0,
             repository: "repository".to_string(),
+            checkout: "main".to_string(),
+            path: "".to_string(),
             fee: (3u128).into(),
             status: super::VerificationStatus::PENDING,
             created_at: 0,

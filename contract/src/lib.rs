@@ -31,6 +31,8 @@ mod tests {
 
     const VERIFICATION_FEE: u128 = ONE_NEAR * 1;
     const REPOSITORY_URL: &'static str = "https://github.com/NEAR-Edu/stats.gallery-dapp.git";
+    const CHECKOUT: &'static str = "main";
+    const PATH: &'static str = "";
 
     fn get_context(predecessor_account_id: AccountId) -> VMContextBuilder {
         let mut builder = VMContextBuilder::new();
@@ -79,8 +81,12 @@ mod tests {
         context.attached_deposit(VERIFICATION_FEE + u128::pow(10, 22) /* storage fee */);
         testing_env!(context.build());
 
-        let request =
-            contract.request_verification(REPOSITORY_URL.to_string(), VERIFICATION_FEE.into());
+        let request = contract.request_verification(
+            REPOSITORY_URL.to_string(),
+            CHECKOUT.to_string(),
+            PATH.to_string(),
+            VERIFICATION_FEE.into(),
+        );
 
         assert_eq!(
             request.repository, REPOSITORY_URL,
@@ -118,7 +124,12 @@ mod tests {
         context.attached_deposit(VERIFICATION_FEE); // no storage fee
         testing_env!(context.build());
 
-        contract.request_verification(REPOSITORY_URL.to_string(), VERIFICATION_FEE.into());
+        contract.request_verification(
+            REPOSITORY_URL.to_string(),
+            CHECKOUT.to_string(),
+            PATH.to_string(),
+            VERIFICATION_FEE.into(),
+        );
     }
 
     #[test]
@@ -133,6 +144,11 @@ mod tests {
         // context.attached_deposit(...); // no deposit
         testing_env!(context.build());
 
-        contract.request_verification(REPOSITORY_URL.to_string(), VERIFICATION_FEE.into());
+        contract.request_verification(
+            REPOSITORY_URL.to_string(),
+            CHECKOUT.to_string(),
+            PATH.to_string(),
+            VERIFICATION_FEE.into(),
+        );
     }
 }

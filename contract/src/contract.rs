@@ -79,7 +79,7 @@ impl Contract {
     }
 
     #[payable]
-    pub fn request_verification(&mut self, repository: String, fee: U128) -> VerificationRequest {
+    pub fn request_verification(&mut self, repository: String, checkout: String, path: String, fee: U128) -> VerificationRequest {
         let attached_deposit = env::attached_deposit();
         require!(attached_deposit > 0, "Deposit required");
 
@@ -101,6 +101,8 @@ impl Contract {
         let request = VerificationRequest {
             id,
             repository,
+            checkout,
+            path,
             fee: verification_fee.into(),
             status: VerificationStatus::PENDING,
             created_at: now,
